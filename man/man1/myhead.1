@@ -1,0 +1,27 @@
+.TH "MYHEAD" "1" "2018\-04\-04" "myhead v1.0.0" "execjosh"
+.SH NAME
+\fBmyhead\fR \- a clone of \fBhead(1)\fR implemented in go
+.SH SYNOPSIS
+\fBmyhead\fR [\fB\-n\fR=\fICOUNT\fR] <\fIFILE\fR>
+.SH DESCRIPTION
+.PP
+This is an implementation of \fBhead(1)\fR in go for educational purposes.
+.PP
+Prints first \fICOUNT\fR (or 10 if not specified) lines of \fIFILE\fR to stdout.
+.SH EXAMPLES
+.PP
+myhead /path/to/file
+.PP
+myhead -n=1 /path/to/file
+.SH DIAGNOSTICS
+Exits 0 on success; otherwise, exits 1.
+.SH AUTHOR
+Written by execjosh
+.SH COPYRIGHT
+Copyright \(co 2018 execjosh
+.br
+MIT License
+.SH SEE ALSO
+.PP
+\fBhead(1)\fR
+
