@@ -7,9 +7,9 @@ echo '1..7'
 # No args
 #
 
-desc='Exits non-zero for no args'
-bin/myhead &> /dev/null
-[[ $? -eq 0 ]] && echo not ok "${desc}" || echo ok "${desc}"
+desc='Exits zero for no args, assumes stdin'
+bin/myhead < /dev/null &> /dev/null
+[[ $? -eq 0 ]] && echo ok "${desc}" || echo not ok "${desc}"
 
 
 #
@@ -29,9 +29,9 @@ bin/myhead -n=-1 main.go &> /dev/null
 # FILE validation
 #
 
-desc='Exits non-zero for no file'
-bin/myhead -n=1 &> /dev/null
-[[ $? -eq 0 ]] && echo not ok "${desc}" || echo ok "${desc}"
+desc='Exits zero for no file, assumes stdin'
+bin/myhead -n=1 < /dev/null &> /dev/null
+[[ $? -eq 0 ]] && echo ok "${desc}" || echo not ok "${desc}"
 
 desc='Exits non-zero for non-existent file'
 bin/myhead non-existent-file &> /dev/null
