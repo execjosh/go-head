@@ -2,25 +2,41 @@
 .SH NAME
 \fBmyhead\fR \- a clone of \fBhead(1)\fR implemented in go
 .SH SYNOPSIS
-\fBmyhead\fR [\fB\-n\fR=\fICOUNT\fR] [\fIFILE\fR]...
+\fBmyhead\fR [\fB\-n\fR=\fICOUNT\fR] [\fIFILE\fR | \fIURL\fR]...
 .SH DESCRIPTION
 .PP
 This is an implementation of \fBhead(1)\fR in go for educational purposes.
 .PP
 Prints first \fICOUNT\fR (or 10 if not specified) lines of each \fIFILE\fR to
-stdout.  If no \fIFILE\fR is specified, reads from stdin.  If multiple files are
-specified, displays header (``==> \fIFILE\fR <=='') before each file's output.
+stdout.  If multiple files are specified, displays header (``==> \fIFILE\fR
+<=='') before each file's output.
+.PP
+Performs HTTP HEAD request for \fIURL\fRs that start with \fBhttp://\fR or
+\fBhttps://\fR, printing headers in lexicographical order.  \fB-n\fR is ignored
+for \fIURL\fRs.
+.PP
+If no \fIFILE\fR and no \fIURL\fR is specified, reads from stdin.  Otherwise,
+ignores stdin completely.
 .SH EXAMPLES
 .PP
 myhead
+.PP
+myhead http://example.com
 .PP
 myhead /path/to/file
 .PP
 myhead /path/to/file1 /path/to/file2 /path/to/file3
 .PP
+myhead http://example.com https://example.com
+.PP
+myhead http://example.com /path/to/file https://example.com
+.PP
 myhead -n=1 /path/to/file
 .PP
 myhead -n=1 /path/to/file1 /path/to/file2
+.PP
+myhead -n=1 http://example.com /path/to/file1 /path/to/file2 https://example.com
+/path/to/file3
 .PP
 cat /path/to/file | myhead
 .PP
