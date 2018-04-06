@@ -23,6 +23,34 @@ func printUsage() {
 	flag.PrintDefaults()
 }
 
+func printHeadLines(r io.Reader, maxLines int) error {
+	scanner := bufio.NewScanner(r)
+
+	for i := 0; i < maxLines && scanner.Scan(); i++ {
+		fmt.Println(scanner.Text())
+	}
+
+	return scanner.Err()
+}
+
+func processFile(filepath string, maxLines int) error {
+	fi, err := os.Stat(filepath)
+	if err != nil {
+		return err
+	}
+	if fi.IsDir() {
+		return errors.New(fmt.Sprintf("Must be a file: '%v'", filepath))
+	}
+
+	f, err := os.Open(filepath)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	return printHeadLines(f, maxLines)
+}
+
 func main() {
 	maxLines := flag.Int("n", 10, "Max. number of lines to display")
 
@@ -38,36 +66,30 @@ func main() {
 
 	args := flag.Args()
 
-	var r io.Reader
 	if len(args) <= 0 {
-		r = os.Stdin
+		err := printHeadLines(os.Stdin, *maxLines)
+		if err != nil {
+			die(err)
+		}
 	} else {
-		filepath := args[0]
+		hadError := false
+		showsHeader := len(args) > 1
+		for idx, filepath := range args {
+			if showsHeader {
+				if idx >= 1 {
+					fmt.Println()
+				}
+				fmt.Printf("==> %s <==\n", filepath)
+			}
 
-		fi, err := os.Stat(filepath)
-		if err != nil {
-			die(err)
+			err := processFile(filepath, *maxLines)
+			if err != nil {
+				hadError = true
+				printError(err)
+			}
 		}
-		if fi.IsDir() {
-			die(errors.New(fmt.Sprintf("Must be a file: '%v'", filepath)))
+		if hadError {
+			os.Exit(1)
 		}
-
-		f, err := os.Open(filepath)
-		if err != nil {
-			die(err)
-		}
-		defer f.Close()
-
-		r = f
-	}
-
-	scanner := bufio.NewScanner(r)
-	for i := 0; i < *maxLines && scanner.Scan(); i++ {
-		fmt.Println(scanner.Text())
-	}
-
-	err := scanner.Err()
-	if err != nil {
-		die(err)
 	}
 }
