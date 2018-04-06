@@ -2,20 +2,25 @@
 .SH NAME
 \fBmyhead\fR \- a clone of \fBhead(1)\fR implemented in go
 .SH SYNOPSIS
-\fBmyhead\fR [\fB\-n\fR=\fICOUNT\fR] [\fIFILE\fR]
+\fBmyhead\fR [\fB\-n\fR=\fICOUNT\fR] [\fIFILE\fR]...
 .SH DESCRIPTION
 .PP
 This is an implementation of \fBhead(1)\fR in go for educational purposes.
 .PP
-Prints first \fICOUNT\fR (or 10 if not specified) lines of \fIFILE\fR to stdout.
-If no \fIFILE\fR is specified, reads from stdin.
+Prints first \fICOUNT\fR (or 10 if not specified) lines of each \fIFILE\fR to
+stdout.  If no \fIFILE\fR is specified, reads from stdin.  If multiple files are
+specified, displays header (``==> \fIFILE\fR <=='') before each file's output.
 .SH EXAMPLES
 .PP
 myhead
 .PP
 myhead /path/to/file
 .PP
+myhead /path/to/file1 /path/to/file2 /path/to/file3
+.PP
 myhead -n=1 /path/to/file
+.PP
+myhead -n=1 /path/to/file1 /path/to/file2
 .PP
 cat /path/to/file | myhead
 .PP

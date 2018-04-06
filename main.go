@@ -72,10 +72,24 @@ func main() {
 			die(err)
 		}
 	} else {
-		filepath := args[0]
-		err := processFile(filepath, *maxLines)
-		if err != nil {
-			die(err)
+		hadError := false
+		showsHeader := len(args) > 1
+		for idx, filepath := range args {
+			if showsHeader {
+				if idx >= 1 {
+					fmt.Println()
+				}
+				fmt.Printf("==> %s <==\n", filepath)
+			}
+
+			err := processFile(filepath, *maxLines)
+			if err != nil {
+				hadError = true
+				printError(err)
+			}
+		}
+		if hadError {
+			os.Exit(1)
 		}
 	}
 }
