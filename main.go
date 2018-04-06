@@ -33,6 +33,24 @@ func printHeadLines(r io.Reader, maxLines int) error {
 	return scanner.Err()
 }
 
+func processFile(filepath string, maxLines int) error {
+	fi, err := os.Stat(filepath)
+	if err != nil {
+		return err
+	}
+	if fi.IsDir() {
+		return errors.New(fmt.Sprintf("Must be a file: '%v'", filepath))
+	}
+
+	f, err := os.Open(filepath)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	return printHeadLines(f, maxLines)
+}
+
 func main() {
 	maxLines := flag.Int("n", 10, "Max. number of lines to display")
 
@@ -55,22 +73,7 @@ func main() {
 		}
 	} else {
 		filepath := args[0]
-
-		fi, err := os.Stat(filepath)
-		if err != nil {
-			die(err)
-		}
-		if fi.IsDir() {
-			die(errors.New(fmt.Sprintf("Must be a file: '%v'", filepath)))
-		}
-
-		f, err := os.Open(filepath)
-		if err != nil {
-			die(err)
-		}
-		defer f.Close()
-
-		err = printHeadLines(f, *maxLines)
+		err := processFile(filepath, *maxLines)
 		if err != nil {
 			die(err)
 		}
