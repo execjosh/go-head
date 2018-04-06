@@ -23,6 +23,16 @@ func printUsage() {
 	flag.PrintDefaults()
 }
 
+func printHeadLines(r io.Reader, maxLines int) error {
+	scanner := bufio.NewScanner(r)
+
+	for i := 0; i < maxLines && scanner.Scan(); i++ {
+		fmt.Println(scanner.Text())
+	}
+
+	return scanner.Err()
+}
+
 func main() {
 	maxLines := flag.Int("n", 10, "Max. number of lines to display")
 
@@ -38,9 +48,11 @@ func main() {
 
 	args := flag.Args()
 
-	var r io.Reader
 	if len(args) <= 0 {
-		r = os.Stdin
+		err := printHeadLines(os.Stdin, *maxLines)
+		if err != nil {
+			die(err)
+		}
 	} else {
 		filepath := args[0]
 
@@ -58,16 +70,9 @@ func main() {
 		}
 		defer f.Close()
 
-		r = f
-	}
-
-	scanner := bufio.NewScanner(r)
-	for i := 0; i < *maxLines && scanner.Scan(); i++ {
-		fmt.Println(scanner.Text())
-	}
-
-	err := scanner.Err()
-	if err != nil {
-		die(err)
+		err = printHeadLines(f, *maxLines)
+		if err != nil {
+			die(err)
+		}
 	}
 }
