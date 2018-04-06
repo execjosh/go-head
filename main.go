@@ -5,6 +5,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"os"
 )
 
@@ -37,33 +38,35 @@ func main() {
 
 	args := flag.Args()
 
+	var r io.Reader
 	if len(args) <= 0 {
-		flag.Usage()
-		os.Exit(1)
+		r = os.Stdin
+	} else {
+		filepath := args[0]
+
+		fi, err := os.Stat(filepath)
+		if err != nil {
+			die(err)
+		}
+		if fi.IsDir() {
+			die(errors.New(fmt.Sprintf("Must be a file: '%v'", filepath)))
+		}
+
+		f, err := os.Open(filepath)
+		if err != nil {
+			die(err)
+		}
+		defer f.Close()
+
+		r = f
 	}
 
-	filepath := args[0]
-
-	fi, err := os.Stat(filepath)
-	if err != nil {
-		die(err)
-	}
-	if fi.IsDir() {
-		die(errors.New(fmt.Sprintf("Must be a file: '%v'", filepath)))
-	}
-
-	f, err := os.Open(filepath)
-	if err != nil {
-		die(err)
-	}
-	defer f.Close()
-
-	scanner := bufio.NewScanner(f)
+	scanner := bufio.NewScanner(r)
 	for i := 0; i < *maxLines && scanner.Scan(); i++ {
 		fmt.Println(scanner.Text())
 	}
 
-	err = scanner.Err()
+	err := scanner.Err()
 	if err != nil {
 		die(err)
 	}
