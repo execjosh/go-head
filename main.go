@@ -36,7 +36,21 @@ func printHeadLines(r io.Reader, maxLines int) error {
 	return scanner.Err()
 }
 
-func processFile(filepath string, maxLines int) error {
+func printHeadBytes(r io.Reader, maxBytes int) error {
+	// FIXME smart loop reading small buffer each time
+	b := make([]byte, maxBytes)
+
+	rb, err := r.Read(b)
+	if err != nil {
+		return err
+	}
+
+	os.Stdout.Write(b[:rb])
+
+	return nil
+}
+
+func processFile(filepath string, maxCount int, headFunc HeadFunc) error {
 	fi, err := os.Stat(filepath)
 	if err != nil {
 		return err
@@ -51,7 +65,7 @@ func processFile(filepath string, maxLines int) error {
 	}
 	defer f.Close()
 
-	return printHeadLines(f, maxLines)
+	return headFunc(f, maxCount)
 }
 
 func processUrl(url string) error {
@@ -83,14 +97,43 @@ func processUrl(url string) error {
 	return nil
 }
 
+type HeadFunc func(r io.Reader, maxLines int) error
+
 func main() {
-	maxLines := flag.Int("n", 10, "Max. number of lines to display")
+	maxLines := flag.Int("n", 10, "Max. number of lines to display (incompatible with -c)")
+	maxBytes := flag.Int("c", -1, "Max. number of bytes to display (incompatible with -n)")
 
 	flag.Usage = printUsage
 
 	flag.Parse()
 
-	if *maxLines <= 0 {
+	maxLinesWasSet := false
+	maxBytesWasSet := false
+
+	flag.Visit(func(f *flag.Flag) {
+		switch f.Name {
+		case "n":
+			maxLinesWasSet = true
+		case "c":
+			maxBytesWasSet = true
+		}
+	})
+
+	if maxLinesWasSet && maxBytesWasSet {
+		die(errors.New("Cannot combine -n and -c"))
+	}
+
+	var maxCount int
+	var headFunc HeadFunc
+	if maxBytesWasSet {
+		maxCount = *maxBytes
+		headFunc = printHeadBytes
+	} else {
+		maxCount = *maxLines
+		headFunc = printHeadLines
+	}
+
+	if maxCount <= 0 {
 		fmt.Fprintf(os.Stderr, "COUNT must be greater than 0!\n")
 		flag.Usage()
 		os.Exit(1)
@@ -99,7 +142,7 @@ func main() {
 	args := flag.Args()
 
 	if len(args) <= 0 {
-		err := printHeadLines(os.Stdin, *maxLines)
+		err := headFunc(os.Stdin, maxCount)
 		if err != nil {
 			die(err)
 		}
@@ -118,7 +161,7 @@ func main() {
 			if strings.HasPrefix(filepath, "http://") || strings.HasPrefix(filepath, "https://") {
 				err = processUrl(filepath)
 			} else {
-				err = processFile(filepath, *maxLines)
+				err = processFile(filepath, maxCount, headFunc)
 			}
 
 			if err != nil {
