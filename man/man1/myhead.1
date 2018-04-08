@@ -1,21 +1,29 @@
-.TH "MYHEAD" "1" "2018\-04\-04" "myhead v1.0.0" "execjosh"
+.TH "MYHEAD" "1" "2018\-04\-08" "myhead v1.1.0" "execjosh"
 .SH NAME
 \fBmyhead\fR \- a clone of \fBhead(1)\fR implemented in go
 .SH SYNOPSIS
-\fBmyhead\fR [\fB\-n\fR=\fICOUNT\fR] [\fIFILE\fR | \fIURL\fR]...
+\fBmyhead\fR [\fB\-n\fR=\fILINES\fR | \fB\-c\fR=\fIBYTES\fR] [\fIFILE\fR | \fIURL\fR]...
 .SH DESCRIPTION
 .PP
 This is an implementation of \fBhead(1)\fR in go for educational purposes.
 .PP
-Prints first \fICOUNT\fR (or 10 if not specified) lines of each \fIFILE\fR to
-stdout.  If multiple files are specified, displays header (``==> \fIFILE\fR
-<=='') before each file's output.
+\fB\-n\fR and \fB\-c\fR are incompatible.  Refuses to process input when both
+are specified.
+.PP
+When \fB\-c\fR is not specified, prints first \fILINES\fR lines (or 10 lines if
+\fB\-n\fR not specified) of each \fIFILE\fR to stdout.
+.PP
+When \fB\-c\fR is specified, prints first \fIBYTES\fR bytes of each \fIFILE\fR
+to stdout.
 .PP
 Performs HTTP HEAD request for \fIURL\fRs that start with \fBhttp://\fR or
-\fBhttps://\fR, printing headers in lexicographical order.  \fB-n\fR is ignored
-for \fIURL\fRs.
+\fBhttps://\fR, printing headers in lexicographical order.  \fB\-n\fR and
+\fB\-c\fR are ignored for \fIURL\fRs.
 .PP
-If no \fIFILE\fR and no \fIURL\fR is specified, reads from stdin.  Otherwise,
+If multiple files are specified, displays header (``==> name <=='') before each
+file's output.
+.PP
+If no \fIFILE\fR nor \fIURL\fR are specified, reads from stdin.  Otherwise,
 ignores stdin completely.
 .SH EXAMPLES
 .PP
@@ -35,12 +43,15 @@ myhead -n=1 /path/to/file
 .PP
 myhead -n=1 /path/to/file1 /path/to/file2
 .PP
+myhead -c=100 /path/to/file1 /path/to/file2
+.PP
 myhead -n=1 http://example.com /path/to/file1 /path/to/file2 https://example.com
-/path/to/file3
 .PP
 cat /path/to/file | myhead
 .PP
 cat /path/to/file | myhead -n=1
+.PP
+cat /path/to/file | myhead -c=100
 .SH DIAGNOSTICS
 Exits 0 on success; otherwise, exits 1.
 .SH AUTHOR
